@@ -68,3 +68,15 @@ func (s *SharedError) Store(err error) {
 
 	s.err = append(s.err, err)
 }
+
+// Store stores an error condition in SharedError.
+func (s *SharedError) Storef(format string, args ...interface{}) {
+	if format == "" {
+		return
+	}
+
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	s.err = append(s.err, fmt.Errorf(format, args...))
+}
