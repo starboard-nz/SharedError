@@ -1,3 +1,3 @@
-module gitlab.com/xerra/common/sharederror
+module github.com/starboard-nz/sharederror
 
 go 1.15
