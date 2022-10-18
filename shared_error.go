@@ -120,7 +120,7 @@ func (s *SharedError) IsAll(target error) bool {
 	if len(errs) == 0 {
 		return false
 	}
-	for _, err := range s.Errors() {
+	for _, err := range errs {
 		if !errors.Is(err, target) {
 			return false
 		}
