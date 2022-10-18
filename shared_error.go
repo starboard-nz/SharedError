@@ -104,7 +104,7 @@ func (s *SharedError) Errors() []error {
 	return s.err
 }
 
-// Has checks if SharedError contains target error through errors.Is.
+// Has checks if any error of SharedError contains target error through errors.Is.
 func (s *SharedError) Has(target error) bool {
 	for _, err := range s.Errors() {
 		if errors.Is(err, target) {
@@ -112,4 +112,14 @@ func (s *SharedError) Has(target error) bool {
 		}
 	}
 	return false
+}
+
+// HasOnly checks if all errors of SharedError contains target error through errors.Is.
+func (s *SharedError) HasOnly(target error) bool {
+	for _, err := range s.Errors() {
+		if !errors.Is(err, target) {
+			return false
+		}
+	}
+	return true
 }
