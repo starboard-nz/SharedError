@@ -15,8 +15,12 @@ import (
 // Multiple concurrent goroutines can share a SharedError variable to reports errors
 // to the calling function.
 type SharedError struct {
-	err []error
+	err  []error
 	lock sync.Mutex
+}
+
+func NewSharedError() *SharedError {
+	return &SharedError{}
 }
 
 // Error implements the error interface, you can return a SharedError as an error.
@@ -79,4 +83,21 @@ func (s *SharedError) Storef(format string, args ...interface{}) {
 	defer s.lock.Unlock()
 
 	s.err = append(s.err, fmt.Errorf(format, args...))
+}
+
+// Err returns SharedError as an error when triggered.
+func (s *SharedError) Err() error {
+	if s.Triggered() {
+		return s
+	} else {
+		return nil
+	}
+}
+
+// Errors returns slice of shared errors.
+func (s *SharedError) Errors() []error {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	return s.err
 }
