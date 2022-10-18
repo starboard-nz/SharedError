@@ -7,6 +7,7 @@
 package sharederror
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 )
@@ -19,6 +20,7 @@ type SharedError struct {
 	lock sync.Mutex
 }
 
+// NewSharedError creates new shared-error.
 func NewSharedError() *SharedError {
 	return &SharedError{}
 }
@@ -94,10 +96,20 @@ func (s *SharedError) Err() error {
 	}
 }
 
-// Errors returns slice of shared errors.
+// Errors returns SharedError errors if any.
 func (s *SharedError) Errors() []error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
 	return s.err
+}
+
+// Has checks if SharedError contains target error through errors.Is.
+func (s *SharedError) Has(target error) bool {
+	for _, err := range s.Errors() {
+		if errors.Is(err, target) {
+			return true
+		}
+	}
+	return false
 }
