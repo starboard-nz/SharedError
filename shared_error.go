@@ -7,6 +7,7 @@
 package sharederror
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 )
@@ -15,8 +16,13 @@ import (
 // Multiple concurrent goroutines can share a SharedError variable to reports errors
 // to the calling function.
 type SharedError struct {
-	err []error
+	err  []error
 	lock sync.Mutex
+}
+
+// NewSharedError creates new shared-error.
+func NewSharedError() *SharedError {
+	return &SharedError{}
 }
 
 // Error implements the error interface, you can return a SharedError as an error.
@@ -79,4 +85,45 @@ func (s *SharedError) Storef(format string, args ...interface{}) {
 	defer s.lock.Unlock()
 
 	s.err = append(s.err, fmt.Errorf(format, args...))
+}
+
+// Err returns SharedError as an error when triggered.
+func (s *SharedError) Err() error {
+	if s.Triggered() {
+		return s
+	} else {
+		return nil
+	}
+}
+
+// Errors returns SharedError errors if any.
+func (s *SharedError) Errors() []error {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	return s.err
+}
+
+// IsAny checks if any error of SharedError matches target error.
+func (s *SharedError) IsAny(target error) bool {
+	for _, err := range s.Errors() {
+		if errors.Is(err, target) {
+			return true
+		}
+	}
+	return false
+}
+
+// IsAny checks if all errors of SharedError matches target error.
+func (s *SharedError) IsAll(target error) bool {
+	errs := s.Errors()
+	if len(errs) == 0 {
+		return false
+	}
+	for _, err := range errs {
+		if !errors.Is(err, target) {
+			return false
+		}
+	}
+	return true
 }
