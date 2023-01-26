@@ -30,6 +30,11 @@ func (s *SharedError) Error() string {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
+	return s.string()
+}
+
+// assumes that s is already locked
+func (s *SharedError) string() string {
 	if len(s.err) == 0 {
 		return ""
 	}
@@ -73,6 +78,25 @@ func (s *SharedError) Store(err error) {
 	defer s.lock.Unlock()
 
 	s.err = append(s.err, err)
+}
+
+// Return any error and reset the error if it was triggered.
+func (s *SharedError) Reset() error {
+	if s == nil {
+		return nil
+	}
+
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	err := s.string()
+	s.err = nil
+
+	if err == "" {
+		return nil
+	}
+
+	return errors.New(err)
 }
 
 // Store stores an error condition in SharedError.

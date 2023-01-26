@@ -123,3 +123,25 @@ func TestSharedErrorIsAll(t *testing.T) {
 		t.Errorf("expected not all errors match on target error, got all matches")
 	}
 }
+
+func TestReset(t *testing.T) {
+	var sharedErr = sharederror.NewSharedError()
+
+	err := sharedErr.Reset()
+	if err != nil {
+		t.Errorf("incorrect result")
+	}
+
+	t.Log("store error")
+	sharedErr.Store(fmt.Errorf("some error"))
+
+	err = sharedErr.Reset()
+	if err == nil {
+		t.Errorf("incorrect result")
+	}
+
+	err = sharedErr.Reset()
+	if err != nil {
+		t.Errorf("incorrect result")
+	}
+}
